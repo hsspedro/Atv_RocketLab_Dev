@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -34,9 +34,25 @@ def criar_consumidor(consumidor: ConsumidorCreate, db: Session = Depends(get_db)
     return novo
 
 
-@router.get("/", response_model=list[ConsumidorRead])
-def listar_consumidores(db: Session = Depends(get_db)):
-    return db.query(Consumidor).all()
+@router.get("/")
+def listar_consumidores(
+    last_id: str | None = Query(None),
+    limit: int = Query(50, le=100),
+    db: Session = Depends(get_db)
+):
+    query = db.query(Consumidor)
+
+    if last_id:
+        query = query.filter(Consumidor.id_consumidor > last_id)
+
+    result = query.order_by(Consumidor.id_consumidor).limit(limit).all()
+
+    next_cursor = result[-1].id_consumidor if result else None
+
+    return {
+        "data": result,
+        "next_cursor": next_cursor
+    }
 
 
 @router.get("/{id_consumidor}", response_model=ConsumidorRead)

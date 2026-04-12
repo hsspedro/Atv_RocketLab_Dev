@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -27,9 +27,29 @@ def criar_avaliacao(dados: AvaliacaoPedidoCreate, db: Session = Depends(get_db))
     return nova
 
 
-@router.get("/", response_model=list[AvaliacaoPedidoRead])
-def listar_avaliacoes(db: Session = Depends(get_db)):
-    return db.query(AvaliacaoPedido).all()
+@router.get("/")
+def listar_avaliacoes(
+    last_id: str | None = Query(None),
+    limit: int = Query(50, le=100),
+    id_pedido: str | None = None,
+    db: Session = Depends(get_db)
+):
+    query = db.query(AvaliacaoPedido)
+
+    if id_pedido:
+        query = query.filter(AvaliacaoPedido.id_pedido == id_pedido)
+
+    if last_id:
+        query = query.filter(AvaliacaoPedido.id_avaliacao > last_id)
+
+    result = query.order_by(AvaliacaoPedido.id_avaliacao).limit(limit).all()
+
+    next_cursor = result[-1].id_avaliacao if result else None
+
+    return {
+        "data": result,
+        "next_cursor": next_cursor
+    }
 
 
 @router.get("/{id_avaliacao}", response_model=AvaliacaoPedidoRead)

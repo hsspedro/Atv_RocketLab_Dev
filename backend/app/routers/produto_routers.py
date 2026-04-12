@@ -1,5 +1,7 @@
+from fastapi import Query
+from typing import Optional
 from app.schemas.produto_schema import ProdutoUpdate, ProdutoCreate, ProdutoRead
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -31,9 +33,25 @@ def criar_produto(produto: ProdutoCreate, db: Session = Depends(get_db)):
     return novo_produto
 
 
-@router.get("/", response_model=list[ProdutoRead])
-def listar_produtos(db: Session = Depends(get_db)):
-    return db.query(Produto).all()
+@router.get("/")
+def listar_produtos(
+    last_id: Optional[str] = Query(None),
+    limit: int = Query(50, le=100),
+    db: Session = Depends(get_db)
+):
+    query = db.query(Produto)
+
+    if last_id:
+        query = query.filter(Produto.id_produto > last_id)
+
+    result = query.order_by(Produto.id_produto).limit(limit).all()
+
+    next_cursor = result[-1].id_produto if result else None
+
+    return {
+        "data": result,
+        "next_cursor": next_cursor
+    }
 
 
 @router.get("/{id_produto}", response_model=ProdutoRead)

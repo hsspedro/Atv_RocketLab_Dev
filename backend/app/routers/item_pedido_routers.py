@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -9,9 +9,29 @@ from app.schemas.item_pedido_schema import ItemPedidoCreate, ItemPedidoRead, Ite
 router = APIRouter(prefix="/itens", tags=["ItensPedido"])
 
 
-@router.get("/", response_model=list[ItemPedidoRead])
-def listar_itens(db: Session = Depends(get_db)):
-    return db.query(ItemPedido).all()
+@router.get("/")
+def listar_itens(
+    last_id: int | None = Query(None),
+    limit: int = Query(50, le=100),
+    id_pedido: str | None = None,
+    db: Session = Depends(get_db)
+):
+    query = db.query(ItemPedido)
+
+    if id_pedido:
+        query = query.filter(ItemPedido.id_pedido == id_pedido)
+
+    if last_id:
+        query = query.filter(ItemPedido.id_item > last_id)
+
+    result = query.order_by(ItemPedido.id_item).limit(limit).all()
+
+    next_cursor = result[-1].id_item if result else None
+
+    return {
+        "data": result,
+        "next_cursor": next_cursor
+    }
 
 
 @router.get("/{id_pedido}/{id_item}", response_model=ItemPedidoRead)

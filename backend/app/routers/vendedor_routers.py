@@ -1,5 +1,5 @@
 from app.schemas.vendedor_schema import VendedorCreate, VendedorRead, VendedorUpdate
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -31,9 +31,25 @@ def criar_vendedor(vendedor: VendedorCreate, db: Session = Depends(get_db)):
     return novo_vendedor
 
 
-@router.get("/", response_model=list[VendedorRead])
-def listar_vendedores(db: Session = Depends(get_db)):
-    return db.query(Vendedor).all()
+@router.get("/")
+def listar_vendedores(
+    last_id: str | None = Query(None),
+    limit: int = Query(50, le=100),
+    db: Session = Depends(get_db)
+):
+    query = db.query(Vendedor)
+
+    if last_id:
+        query = query.filter(Vendedor.id_vendedor > last_id)
+
+    result = query.order_by(Vendedor.id_vendedor).limit(limit).all()
+
+    next_cursor = result[-1].id_vendedor if result else None
+
+    return {
+        "data": result,
+        "next_cursor": next_cursor
+    }
 
 
 @router.get("/{id_vendedor}", response_model=VendedorRead)
