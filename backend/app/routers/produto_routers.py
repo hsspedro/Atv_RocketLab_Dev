@@ -2,10 +2,13 @@ from fastapi import Query
 from typing import Optional
 from app.schemas.produto_schema import ProdutoUpdate, ProdutoCreate, ProdutoRead
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.produto import Produto
+from app.models.item_pedido import ItemPedido
+from app.models.avaliacao_pedido import AvaliacaoPedido
 from app.utils.generate_id import generate_id
 
 
@@ -14,8 +17,9 @@ router = APIRouter(prefix="/produtos", tags=["Produtos"])
 
 @router.post("/", response_model=ProdutoRead)
 def criar_produto(produto: ProdutoCreate, db: Session = Depends(get_db)):
+    produto_data = produto.model_dump(exclude_none=True)
+    id_produto = produto_data.pop("id_produto", None) or generate_id()
 
-    id_produto = generate_id()
     existente = db.query(Produto).filter(
         Produto.id_produto == id_produto
     ).first()
@@ -23,10 +27,10 @@ def criar_produto(produto: ProdutoCreate, db: Session = Depends(get_db)):
     if existente:
         raise HTTPException(
             status_code=409,
-            detail="ID gerado já existe, tente novamente"
+            detail="Produto já existe"
         )
 
-    novo_produto = Produto(id_produto=id_produto, **produto.dict())
+    novo_produto = Produto(id_produto=id_produto, **produto_data)
 
     db.add(novo_produto)
     db.commit()
@@ -38,10 +42,14 @@ def criar_produto(produto: ProdutoCreate, db: Session = Depends(get_db)):
 @router.get("/")
 def listar_produtos(
     last_id: Optional[str] = Query(None),
+    nome: Optional[str] = Query(None),
     limit: int = Query(50, le=100),
     db: Session = Depends(get_db)
 ):
     query = db.query(Produto)
+
+    if nome:
+        query = query.filter(Produto.nome_produto.ilike(f"%{nome}%"))
 
     if last_id:
         query = query.filter(Produto.id_produto > last_id)
@@ -63,7 +71,7 @@ def buscar_produtos(
     db: Session = Depends(get_db)
 ):
     query = db.query(Produto).filter(Produto.nome_produto.ilike(f"%{nome}%"))
-    
+
     result = query.order_by(Produto.nome_produto).limit(limit).all()
 
     if not result:
@@ -75,6 +83,40 @@ def buscar_produtos(
     return {
         "data": result
     }
+
+
+@router.get("/{id_produto}/media-avaliacoes")
+def media_avaliacoes_produto(id_produto: str, db: Session = Depends(get_db)):
+    produto = db.query(Produto).filter(
+        Produto.id_produto == id_produto
+    ).first()
+
+    if not produto:
+        raise HTTPException(
+            status_code=404,
+            detail="Produto não encontrado"
+        )
+
+    media = db.query(func.avg(AvaliacaoPedido.avaliacao))\
+        .join(ItemPedido, ItemPedido.id_pedido == AvaliacaoPedido.id_pedido)\
+        .filter(ItemPedido.id_produto == id_produto)\
+        .scalar()
+
+    return {"media": float(media) if media is not None else 0.0}
+
+
+@router.get("/{id_produto}", response_model=ProdutoRead)
+def buscar_produto(id_produto: str, db: Session = Depends(get_db)):
+    produto = db.query(Produto).filter(
+        Produto.id_produto == id_produto).first()
+
+    if not produto:
+        raise HTTPException(
+            status_code=404,
+            detail="Produto não encontrado"
+        )
+
+    return produto
 
 
 @router.delete("/{id_produto}")
@@ -105,7 +147,7 @@ def atualizar_produto(id_produto: str, dados: ProdutoUpdate, db: Session = Depen
             detail="Produto não encontrado"
         )
 
-    for key, value in dados.dict(exclude_unset=True).items():
+    for key, value in dados.model_dump(exclude_unset=True).items():
         setattr(produto, key, value)
 
     db.commit()

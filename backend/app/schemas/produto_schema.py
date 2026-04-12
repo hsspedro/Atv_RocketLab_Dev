@@ -12,7 +12,7 @@ class ProdutoBase(BaseModel):
 
 
 class ProdutoCreate(ProdutoBase):
-    pass
+    id_produto: Optional[str] = Field(None, min_length=1, max_length=32)
 
 
 class ProdutoUpdate(BaseModel):
