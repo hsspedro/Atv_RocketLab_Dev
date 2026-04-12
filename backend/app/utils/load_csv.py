@@ -11,17 +11,9 @@ from app.models.vendedor import Vendedor
 from app.models.item_pedido import ItemPedido
 from app.models.avaliacao_pedido import AvaliacaoPedido
 
-
-# -------------------
-# CONFIG CAMINHO
-# -------------------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 
-
-# -------------------
-# HELPERS
-# -------------------
 def parse_datetime(value):
     if not value or value.strip() == "":
         return None
@@ -40,17 +32,11 @@ def parse_float(value):
         return None
 
 
-# -------------------
-# MAIN
-# -------------------
 def load_all():
     db = SessionLocal()
 
-    print("🚀 Iniciando ingestão...")
+    print(" Iniciando ingestão...")
 
-    # -------------------
-    # CONSUMIDORES
-    # -------------------
     with open(os.path.join(DATA_DIR, "dim_consumidores.csv"), encoding="utf-8") as f:
         reader = csv.DictReader(f)
 
@@ -72,11 +58,8 @@ def load_all():
         db.bulk_save_objects(novos)
 
     db.commit()
-    print(f"✅ Consumidores inseridos: {len(novos)}")
+    print(f" Consumidores inseridos: {len(novos)}")
 
-    # -------------------
-    # VENDEDORES
-    # -------------------
     with open(os.path.join(DATA_DIR, "dim_vendedores.csv"), encoding="utf-8") as f:
         reader = csv.DictReader(f)
 
@@ -98,11 +81,8 @@ def load_all():
         db.bulk_save_objects(novos)
 
     db.commit()
-    print(f"✅ Vendedores inseridos: {len(novos)}")
+    print(f" Vendedores inseridos: {len(novos)}")
 
-    # -------------------
-    # PRODUTOS
-    # -------------------
     with open(os.path.join(DATA_DIR, "dim_produtos.csv"), encoding="utf-8") as f:
         reader = csv.DictReader(f)
 
@@ -126,11 +106,8 @@ def load_all():
         db.bulk_save_objects(novos)
 
     db.commit()
-    print(f"✅ Produtos inseridos: {len(novos)}")
+    print(f" Produtos inseridos: {len(novos)}")
 
-    # -------------------
-    # PEDIDOS
-    # -------------------
     with open(os.path.join(DATA_DIR, "fat_pedidos.csv"), encoding="utf-8") as f:
         reader = csv.DictReader(f)
 
@@ -157,11 +134,8 @@ def load_all():
         db.bulk_save_objects(novos)
 
     db.commit()
-    print(f"✅ Pedidos inseridos: {len(novos)}")
+    print(f" Pedidos inseridos: {len(novos)}")
 
-    # -------------------
-    # ITENS (CHAVE COMPOSTA)
-    # -------------------
     with open(os.path.join(DATA_DIR, "fat_itens_pedidos.csv"), encoding="utf-8") as f:
         reader = csv.DictReader(f)
 
@@ -190,11 +164,8 @@ def load_all():
         db.bulk_save_objects(novos)
 
     db.commit()
-    print(f"✅ Itens inseridos: {len(novos)}")
+    print(f" Itens inseridos: {len(novos)}")
 
-    # -------------------
-    # AVALIAÇÕES
-    # -------------------
     with open(os.path.join(DATA_DIR, "fat_avaliacoes_pedidos.csv"), encoding="utf-8") as f:
         reader = csv.DictReader(f)
 
@@ -229,9 +200,9 @@ def load_all():
         db.bulk_save_objects(novos)
 
     db.commit()
-    print(f"✅ Avaliações inseridas: {len(novos)}")
+    print(f" Avaliações inseridas: {len(novos)}")
     db.close()
-    print("🎉 Ingestão finalizada com sucesso!")
+    print(" Ingestão finalizada com sucesso!")
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ class PedidoBase(BaseModel):
 
 
 class PedidoCreate(PedidoBase):
-    id_pedido: str = Field(..., min_length=1, max_length=32)
+    pass
 
 
 class PedidoUpdate(BaseModel):

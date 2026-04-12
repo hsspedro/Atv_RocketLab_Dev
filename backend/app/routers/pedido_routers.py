@@ -5,13 +5,15 @@ from typing import Optional
 
 from app.database import get_db
 from app.models.pedido import Pedido
+from app.utils.generate_id import generate_id
 
 router = APIRouter(prefix="/pedidos", tags=["Pedidos"])
 
 
 @router.post("/", response_model=PedidoRead)
 def criar_pedido(pedido: PedidoCreate, db: Session = Depends(get_db)):
-    novo_pedido = Pedido(**pedido.dict())
+    id_pedido = generate_id()
+    novo_pedido = Pedido(id_pedido=id_pedido, **pedido.dict())
 
     db.add(novo_pedido)
     db.commit()

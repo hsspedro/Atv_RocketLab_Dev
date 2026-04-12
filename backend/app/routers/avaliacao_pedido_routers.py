@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.avaliacao_pedido import AvaliacaoPedido
 from app.schemas.avaliacao_pedido_schema import AvaliacaoPedidoCreate, AvaliacaoPedidoRead, AvaliacaoPedidoUpdate
+from app.utils.generate_id import generate_id
 
 router = APIRouter(prefix="/avaliacoes", tags=["Avaliações"])
 
@@ -11,14 +12,15 @@ router = APIRouter(prefix="/avaliacoes", tags=["Avaliações"])
 @router.post("/", response_model=AvaliacaoPedidoRead)
 def criar_avaliacao(dados: AvaliacaoPedidoCreate, db: Session = Depends(get_db)):
 
+    id_avaliacao = generate_id()
     existente = db.query(AvaliacaoPedido).filter(
-        AvaliacaoPedido.id_avaliacao == dados.id_avaliacao
+        AvaliacaoPedido.id_avaliacao == id_avaliacao
     ).first()
 
     if existente:
-        raise HTTPException(409, "Avaliação já existe")
+        raise HTTPException(409, "ID gerado já existe, tente novamente")
 
-    nova = AvaliacaoPedido(**dados.dict())
+    nova = AvaliacaoPedido(id_avaliacao=id_avaliacao, **dados.dict())
 
     db.add(nova)
     db.commit()

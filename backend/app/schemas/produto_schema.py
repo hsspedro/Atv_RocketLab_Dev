@@ -12,12 +12,13 @@ class ProdutoBase(BaseModel):
 
 
 class ProdutoCreate(ProdutoBase):
-    id_produto: str = Field(..., min_length=1, max_length=32)
+    pass
 
 
 class ProdutoUpdate(BaseModel):
     nome_produto: Optional[str] = Field(None, min_length=1, max_length=255)
-    categoria_produto: Optional[str] = Field(None, min_length=1, max_length=100)
+    categoria_produto: Optional[str] = Field(
+        None, min_length=1, max_length=100)
     peso_produto_gramas: Optional[float] = None
     comprimento_centimetros: Optional[float] = None
     altura_centimetros: Optional[float] = None

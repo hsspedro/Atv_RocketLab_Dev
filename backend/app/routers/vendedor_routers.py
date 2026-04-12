@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.vendedor import Vendedor
+from app.utils.generate_id import generate_id
 
 
 router = APIRouter(prefix="/vendedores", tags=["Vendedores"])
@@ -12,17 +13,18 @@ router = APIRouter(prefix="/vendedores", tags=["Vendedores"])
 @router.post("/", response_model=VendedorRead)
 def criar_vendedor(vendedor: VendedorCreate, db: Session = Depends(get_db)):
 
+    id_vendedor = generate_id()
     existente = db.query(Vendedor).filter(
-        Vendedor.id_vendedor == vendedor.id_vendedor
+        Vendedor.id_vendedor == id_vendedor
     ).first()
 
     if existente:
         raise HTTPException(
             status_code=409,
-            detail="Vendedor já existe"
+            detail="ID gerado já existe, tente novamente"
         )
 
-    novo_vendedor = Vendedor(**vendedor.dict())
+    novo_vendedor = Vendedor(id_vendedor=id_vendedor, **vendedor.dict())
 
     db.add(novo_vendedor)
     db.commit()
@@ -52,19 +54,26 @@ def listar_vendedores(
     }
 
 
-@router.get("/{id_vendedor}", response_model=VendedorRead)
-def buscar_vendedor(id_vendedor: str, db: Session = Depends(get_db)):
-    vendedor = db.query(Vendedor).filter(
-        Vendedor.id_vendedor == id_vendedor
-    ).first()
+@router.get("/buscar")
+def buscar_vendedor(
+    nome: str = Query(..., min_length=1),
+    limit: int = Query(50, le=100),
+    db: Session = Depends(get_db)
+):
+    result = db.query(Vendedor).filter(
+        Vendedor.nome_vendedor.ilike(f"%{nome}%")
+    ).order_by(Vendedor.nome_vendedor).limit(limit).all()
 
-    if not vendedor:
+    if not result:
         raise HTTPException(
             status_code=404,
-            detail="Vendedor não encontrado"
+            detail="Nenhum vendedor encontrado com esse nome"
         )
 
-    return vendedor
+    return {
+        "data": result
+    }
+
 
 
 @router.put("/{id_vendedor}", response_model=VendedorRead)

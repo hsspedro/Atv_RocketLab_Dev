@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.produto import Produto
+from app.utils.generate_id import generate_id
 
 
 router = APIRouter(prefix="/produtos", tags=["Produtos"])
@@ -14,17 +15,18 @@ router = APIRouter(prefix="/produtos", tags=["Produtos"])
 @router.post("/", response_model=ProdutoRead)
 def criar_produto(produto: ProdutoCreate, db: Session = Depends(get_db)):
 
+    id_produto = generate_id()
     existente = db.query(Produto).filter(
-        Produto.id_produto == produto.id_produto
+        Produto.id_produto == id_produto
     ).first()
 
     if existente:
         raise HTTPException(
             status_code=409,
-            detail="Produto já existe"
+            detail="ID gerado já existe, tente novamente"
         )
 
-    novo_produto = Produto(**produto.dict())
+    novo_produto = Produto(id_produto=id_produto, **produto.dict())
 
     db.add(novo_produto)
     db.commit()
@@ -54,18 +56,25 @@ def listar_produtos(
     }
 
 
-@router.get("/{id_produto}", response_model=ProdutoRead)
-def buscar_produto(id_produto: str, db: Session = Depends(get_db)):
-    produto = db.query(Produto).filter(
-        Produto.id_produto == id_produto).first()
+@router.get("/buscar")
+def buscar_produtos(
+    nome: str = Query(..., min_length=1),
+    limit: int = Query(50, le=100),
+    db: Session = Depends(get_db)
+):
+    query = db.query(Produto).filter(Produto.nome_produto.ilike(f"%{nome}%"))
+    
+    result = query.order_by(Produto.nome_produto).limit(limit).all()
 
-    if not produto:
+    if not result:
         raise HTTPException(
             status_code=404,
-            detail="Produto não encontrado"
+            detail="Nenhum produto encontrado com esse nome"
         )
 
-    return produto
+    return {
+        "data": result
+    }
 
 
 @router.delete("/{id_produto}")

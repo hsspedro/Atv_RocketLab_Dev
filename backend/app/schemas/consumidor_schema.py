@@ -10,7 +10,7 @@ class ConsumidorBase(BaseModel):
 
 
 class ConsumidorCreate(ConsumidorBase):
-    id_consumidor: str = Field(..., min_length=1, max_length=32)
+    pass
 
 
 class ConsumidorUpdate(BaseModel):

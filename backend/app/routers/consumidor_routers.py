@@ -8,6 +8,7 @@ from app.schemas.consumidor_schema import (
     ConsumidorRead,
     ConsumidorUpdate
 )
+from app.utils.generate_id import generate_id
 
 router = APIRouter(prefix="/consumidores", tags=["Consumidores"])
 
@@ -15,17 +16,18 @@ router = APIRouter(prefix="/consumidores", tags=["Consumidores"])
 @router.post("/", response_model=ConsumidorRead)
 def criar_consumidor(consumidor: ConsumidorCreate, db: Session = Depends(get_db)):
 
+    id_consumidor = generate_id()
     existente = db.query(Consumidor).filter(
-        Consumidor.id_consumidor == consumidor.id_consumidor
+        Consumidor.id_consumidor == id_consumidor
     ).first()
 
     if existente:
         raise HTTPException(
             status_code=409,
-            detail="Consumidor já existe"
+            detail="ID gerado já existe, tente novamente"
         )
 
-    novo = Consumidor(**consumidor.dict())
+    novo = Consumidor(id_consumidor=id_consumidor, **consumidor.dict())
 
     db.add(novo)
     db.commit()
@@ -55,19 +57,25 @@ def listar_consumidores(
     }
 
 
-@router.get("/{id_consumidor}", response_model=ConsumidorRead)
-def buscar_consumidor(id_consumidor: str, db: Session = Depends(get_db)):
-    consumidor = db.query(Consumidor).filter(
-        Consumidor.id_consumidor == id_consumidor
-    ).first()
+@router.get("/buscar")
+def buscar_consumidor(
+    nome: str = Query(..., min_length=1),
+    limit: int = Query(50, le=100),
+    db: Session = Depends(get_db)
+):
+    result = db.query(Consumidor).filter(
+        Consumidor.nome_consumidor.ilike(f"%{nome}%")
+    ).order_by(Consumidor.nome_consumidor).limit(limit).all()
 
-    if not consumidor:
+    if not result:
         raise HTTPException(
             status_code=404,
-            detail="Consumidor não encontrado"
+            detail="Nenhum consumidor encontrado com esse nome"
         )
 
-    return consumidor
+    return {
+        "data": result
+    }
 
 
 @router.put("/{id_consumidor}", response_model=ConsumidorRead)

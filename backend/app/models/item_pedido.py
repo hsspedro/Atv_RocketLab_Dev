@@ -10,7 +10,7 @@ class ItemPedido(Base):
     id_pedido: Mapped[str] = mapped_column(
         String(32), ForeignKey("pedidos.id_pedido"), nullable=False
     )
-    id_item: Mapped[int] = mapped_column(Integer, nullable=False)
+    id_item: Mapped[str] = mapped_column(String(32), nullable=False)
     id_produto: Mapped[str] = mapped_column(
         String(32), ForeignKey("produtos.id_produto"), nullable=False
     )

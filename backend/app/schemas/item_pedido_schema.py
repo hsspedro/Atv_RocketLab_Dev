@@ -11,7 +11,6 @@ class ItemPedidoBase(BaseModel):
 
 class ItemPedidoCreate(ItemPedidoBase):
     id_pedido: str = Field(..., min_length=1, max_length=32)
-    id_item: int
 
 
 class ItemPedidoUpdate(BaseModel):
@@ -23,6 +22,6 @@ class ItemPedidoUpdate(BaseModel):
 
 class ItemPedidoRead(ItemPedidoBase):
     id_pedido: str
-    id_item: int
+    id_item: str
 
     model_config = ConfigDict(from_attributes=True)
