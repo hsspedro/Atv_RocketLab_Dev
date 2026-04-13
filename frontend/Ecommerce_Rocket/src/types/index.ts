@@ -6,6 +6,36 @@ export interface Product {
   comprimento_centimetros?: number;
   altura_centimetros?: number;
   largura_centimetros?: number;
+  preco?: number;
+  imagem_url?: string;
+}
+
+export interface CartItem {
+  id_produto: string;
+  quantidade: number;
+  preco_unitario: number;
+  produto?: Product;
+}
+
+export interface Cart {
+  items: CartItem[];
+  total: number;
+}
+
+export interface OrderItem {
+  id_item?: string;
+  id_produto: string;
+  quantidade: number;
+  preco_unitario: number;
+  produto?: Product;
+}
+
+export interface Order {
+  id_pedido?: string;
+  id_consumidor: string;
+  total: number;
+  status?: string;
+  items: OrderItem[];
 }
 
 export interface Review {

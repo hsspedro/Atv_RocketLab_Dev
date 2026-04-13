@@ -94,7 +94,10 @@ def media_avaliacoes_produto(id_produto: str, db: Session = Depends(get_db)):
     if not produto:
         raise HTTPException(404, "Produto não encontrado")
 
-    return {"media": produto.media_avaliacoes}
+    return {
+        "media": produto.media_avaliacoes or 0.0,
+        "total": produto.total_avaliacoes or 0
+    }
 
 
 @router.get("/{id_produto}", response_model=ProdutoRead)

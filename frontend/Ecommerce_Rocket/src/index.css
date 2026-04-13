@@ -2,116 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --text: #6b6375;
-  --text-h: #0f0d14;
-  --bg: #ffffff;
-  --border: #e7e5ea;
-  --code-bg: #f6f5f8;
-
-  --accent: #a855f7;
-  --accent-hover: #9333ea;
-
-  --shadow-sm: 0 4px 10px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.08);
-
-  --radius: 12px;
-
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font-family: var(--sans);
-  font-size: 18px;
-  line-height: 1.5;
-  color: var(--text);
-  background: var(--bg);
+* {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #a1a1aa;
-    --text-h: #fafafa;
-    --bg: #0f0f13;
-    --border: #27272a;
-    --code-bg: #18181b;
-
-    --accent: #c084fc;
-    --accent-hover: #a855f7;
-  }
+html, body, #root {
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  @apply m-0 antialiased;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3e8ff 100%);
+  color: #1f2937;
 }
 
 #root {
-  @apply max-w-6xl mx-auto min-h-screen flex flex-col px-4;
-  border-left: 1px solid var(--border);
-  border-right: 1px solid var(--border);
-}
-
-.title-h1 {
-  @apply text-5xl md:text-3xl font-semibold tracking-tight;
-  color: var(--text-h);
-}
-
-.title-h2 {
-  @apply text-2xl md:text-xl font-medium;
-  color: var(--text-h);
-}
-
-.text-default {
-  @apply text-base;
-  color: var(--text);
-}
-
-.btn {
-  @apply px-5 py-2.5 rounded-xl text-white font-medium transition-all duration-200;
-  background: var(--accent);
-  box-shadow: var(--shadow-sm);
-}
-
-.btn:hover {
-  background: var(--accent-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-.card {
-  @apply p-6 rounded-2xl transition;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
-}
-
-.card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
-}
-
-.input {
-  @apply px-4 py-2 rounded-xl outline-none;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text);
-}
-
-.input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2);
-}
-
-.code {
-  @apply text-sm px-2 py-1 rounded-md;
-  background: var(--code-bg);
-  font-family: var(--mono);
-}
-
-.link {
-  color: var(--accent);
-  @apply font-medium transition;
-}
-
-.link:hover {
-  text-decoration: underline;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
