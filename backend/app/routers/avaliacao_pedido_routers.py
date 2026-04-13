@@ -5,7 +5,9 @@ from app.database import get_db
 from app.models.avaliacao_pedido import AvaliacaoPedido
 from app.schemas.avaliacao_pedido_schema import AvaliacaoPedidoCreate, AvaliacaoPedidoRead, AvaliacaoPedidoUpdate
 from app.utils.generate_id import generate_id
-
+from app.utils.media_produto import atualizar_media
+from app.models.produto import Produto
+from app.models.item_pedido import ItemPedido
 router = APIRouter(prefix="/avaliacoes", tags=["Avaliações"])
 
 
@@ -13,6 +15,7 @@ router = APIRouter(prefix="/avaliacoes", tags=["Avaliações"])
 def criar_avaliacao(dados: AvaliacaoPedidoCreate, db: Session = Depends(get_db)):
 
     id_avaliacao = generate_id()
+
     existente = db.query(AvaliacaoPedido).filter(
         AvaliacaoPedido.id_avaliacao == id_avaliacao
     ).first()
@@ -21,8 +24,28 @@ def criar_avaliacao(dados: AvaliacaoPedidoCreate, db: Session = Depends(get_db))
         raise HTTPException(409, "ID gerado já existe, tente novamente")
 
     nova = AvaliacaoPedido(id_avaliacao=id_avaliacao, **dados.dict())
-
     db.add(nova)
+
+    itens = db.query(ItemPedido).filter(
+        ItemPedido.id_pedido == dados.id_pedido
+    ).all()
+
+    for item in itens:
+        produto = db.query(Produto).filter(
+            Produto.id_produto == item.id_produto
+        ).first()
+
+        if produto:
+            atualizar_media(produto, dados.avaliacao)
+
+    if item:
+        produto = db.query(Produto).filter(
+            Produto.id_produto == item.id_produto
+        ).first()
+
+        if produto:
+            atualizar_media(produto, dados.avaliacao)
+    
     db.commit()
     db.refresh(nova)
 

@@ -1,7 +1,7 @@
 from typing import Optional
 
-from sqlalchemy import String, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import String, Float, Column, Integer
 
 from app.database import Base
 
@@ -16,4 +16,6 @@ class Produto(Base):
     comprimento_centimetros: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     altura_centimetros: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     largura_centimetros: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    media_avaliacoes = Column(Float, default=0.0)
+    total_avaliacoes = Column(Integer, default=0)
 

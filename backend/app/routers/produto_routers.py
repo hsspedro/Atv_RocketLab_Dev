@@ -92,17 +92,9 @@ def media_avaliacoes_produto(id_produto: str, db: Session = Depends(get_db)):
     ).first()
 
     if not produto:
-        raise HTTPException(
-            status_code=404,
-            detail="Produto não encontrado"
-        )
+        raise HTTPException(404, "Produto não encontrado")
 
-    media = db.query(func.avg(AvaliacaoPedido.avaliacao))\
-        .join(ItemPedido, ItemPedido.id_pedido == AvaliacaoPedido.id_pedido)\
-        .filter(ItemPedido.id_produto == id_produto)\
-        .scalar()
-
-    return {"media": float(media) if media is not None else 0.0}
+    return {"media": produto.media_avaliacoes}
 
 
 @router.get("/{id_produto}", response_model=ProdutoRead)
