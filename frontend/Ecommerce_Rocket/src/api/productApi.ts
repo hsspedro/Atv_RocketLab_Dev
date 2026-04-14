@@ -1,5 +1,5 @@
 import client from './client';
-import type { Product } from '../types';
+import type { Product, ProductReview } from '../types';
 
 export const getProducts = (q?: string, lastId?: string, limit = 50) => {
   const params = new URLSearchParams();
@@ -24,3 +24,6 @@ export const deleteProduct = (id: string) =>
 
 export const getAverageRating = (id: string) =>
   client.request(`/produtos/${id}/media-avaliacoes`);
+
+export const getProductReviews = (id: string): Promise<ProductReview[]> =>
+  client.request(`/avaliacoes/${id}/avaliacoes`).then((res: ProductReview[]) => res);

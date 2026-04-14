@@ -46,6 +46,16 @@ export interface Review {
   created_at?: string;
 }
 
+export interface ProductReview {
+  id_avaliacao: string;
+  id_pedido: string;
+  avaliacao: number; // 1-5
+  titulo_comentario?: string;
+  comentario?: string;
+  data_comentario?: string;
+  data_resposta?: string;
+}
+
 export interface Sale {
   id: number;
   product_id: number;

@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getProduct, getAverageRating } from '../api/productApi';
-import type { Product } from '../types';
+import { getProduct, getAverageRating, getProductReviews } from '../api/productApi';
+import type { Product, ProductReview } from '../types';
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<Product | null>(null);
   const [rating, setRating] = useState<number | null>(null);
   const [totalRatings, setTotalRatings] = useState<number>(0);
+  const [reviews, setReviews] = useState<ProductReview[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -21,9 +23,21 @@ export default function ProductDetail() {
         setRating(null);
         setTotalRatings(0);
       });
+    
+    setLoadingReviews(true);
+    getProductReviews(id)
+      .then(setReviews)
+      .catch(() => setReviews([]))
+      .finally(() => setLoadingReviews(false));
   }, [id]);
 
   if (!product) return <div style={{ padding: '40px', textAlign: 'center', color: '#7c3aed' }}>⏳ Carregando produto...</div>;
+
+  const renderStars = (rating: number) => {
+    return [...Array(5)].map((_, i) => (
+      <span key={i} style={{ fontSize: '16px', color: i < rating ? '#fbbf24' : '#d1d5db', marginRight: '2px' }}>★</span>
+    ));
+  };
 
   return (
     <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '16px' }}>
@@ -71,6 +85,49 @@ export default function ProductDetail() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Seção de Avaliações Detalhadas */}
+      <section style={{ marginTop: '40px', borderRadius: '20px', border: '2px solid #ddd6fe', background: 'white', padding: '32px', boxShadow: '0 10px 25px rgba(168, 85, 247, 0.1)' }}>
+        <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 24px 0' }}>💬 Avaliações dos Clientes</h2>
+        
+        {loadingReviews ? (
+          <div style={{ padding: '40px', textAlign: 'center', color: '#7c3aed' }}>⏳ Carregando avaliações...</div>
+        ) : reviews.length === 0 ? (
+          <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>Nenhuma avaliação disponível ainda.</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {reviews.map((review) => (
+              <div key={review.id_avaliacao} style={{ padding: '16px', borderRadius: '12px', border: '1px solid #e5e7eb', background: '#f9fafb' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex' }}>
+                      {renderStars(review.avaliacao)}
+                    </div>
+                    <span style={{ fontWeight: 'bold', color: '#1f2937' }}>({review.avaliacao}/5)</span>
+                  </div>
+                  {review.data_comentario && (
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                      {new Date(review.data_comentario).toLocaleDateString('pt-BR')}
+                    </span>
+                  )}
+                </div>
+                
+                {review.titulo_comentario && (
+                  <h3 style={{ fontWeight: 'bold', color: '#1f2937', margin: '8px 0', fontSize: '16px' }}>
+                    {review.titulo_comentario}
+                  </h3>
+                )}
+                
+                {review.comentario && (
+                  <p style={{ color: '#374151', margin: '8px 0', lineHeight: '1.5' }}>
+                    {review.comentario}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

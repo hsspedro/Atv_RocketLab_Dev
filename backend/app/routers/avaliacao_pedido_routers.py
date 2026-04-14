@@ -51,30 +51,17 @@ def criar_avaliacao(dados: AvaliacaoPedidoCreate, db: Session = Depends(get_db))
 
     return nova
 
-
-@router.get("/")
-def listar_avaliacoes(
-    last_id: str | None = Query(None),
-    limit: int = Query(50, le=100),
-    id_pedido: str | None = None,
+@router.get("/{id_produto}/avaliacoes")
+def listar_avaliacoes_produto(
+    id_produto: str,
     db: Session = Depends(get_db)
 ):
-    query = db.query(AvaliacaoPedido)
+    avaliacoes = db.query(AvaliacaoPedido)\
+        .join(ItemPedido, ItemPedido.id_pedido == AvaliacaoPedido.id_pedido)\
+        .filter(ItemPedido.id_produto == id_produto)\
+        .all()
 
-    if id_pedido:
-        query = query.filter(AvaliacaoPedido.id_pedido == id_pedido)
-
-    if last_id:
-        query = query.filter(AvaliacaoPedido.id_avaliacao > last_id)
-
-    result = query.order_by(AvaliacaoPedido.id_avaliacao).limit(limit).all()
-
-    next_cursor = result[-1].id_avaliacao if result else None
-
-    return {
-        "data": result,
-        "next_cursor": next_cursor
-    }
+    return avaliacoes
 
 
 @router.get("/{id_avaliacao}", response_model=AvaliacaoPedidoRead)
