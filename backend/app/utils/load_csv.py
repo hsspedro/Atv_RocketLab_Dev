@@ -10,9 +10,12 @@ from app.models.consumidor import Consumidor
 from app.models.vendedor import Vendedor
 from app.models.item_pedido import ItemPedido
 from app.models.avaliacao_pedido import AvaliacaoPedido
+from app.models.categoria import Categoria
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+BASE_DIR = os.path.dirname(os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 DATA_DIR = os.path.join(BASE_DIR, "data")
+
 
 def parse_datetime(value):
     if not value or value.strip() == "":
@@ -83,6 +86,26 @@ def load_all():
     db.commit()
     print(f" Vendedores inseridos: {len(novos)}")
 
+    with open(os.path.join(DATA_DIR, "dim_categoria_imagens.csv"), encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+
+        existentes = {c[0] for c in db.query(Categoria.nome_categoria).all()}
+        novos = []
+
+        for row in reader:
+            if row["Categoria"] in existentes:
+                continue
+
+            novos.append(Categoria(
+                nome_categoria=row["Categoria"],
+                link_imagem=row["Link"]
+            ))
+
+        db.bulk_save_objects(novos)
+
+    db.commit()
+    print(f" Categorias inseridas: {len(novos)}")
+
     with open(os.path.join(DATA_DIR, "dim_produtos.csv"), encoding="utf-8") as f:
         reader = csv.DictReader(f)
 
@@ -97,10 +120,13 @@ def load_all():
                 id_produto=row["id_produto"],
                 nome_produto=row["nome_produto"],
                 categoria_produto=row["categoria_produto"],
-                peso_produto_gramas=parse_float(row.get("peso_produto_gramas")),
-                comprimento_centimetros=parse_float(row.get("comprimento_centimetros")),
+                peso_produto_gramas=parse_float(
+                    row.get("peso_produto_gramas")),
+                comprimento_centimetros=parse_float(
+                    row.get("comprimento_centimetros")),
                 altura_centimetros=parse_float(row.get("altura_centimetros")),
-                largura_centimetros=parse_float(row.get("largura_centimetros")),
+                largura_centimetros=parse_float(
+                    row.get("largura_centimetros")),
             ))
 
         db.bulk_save_objects(novos)
@@ -122,12 +148,17 @@ def load_all():
                 id_pedido=row["id_pedido"],
                 id_consumidor=row["id_consumidor"],
                 status=row.get("status"),
-                pedido_compra_timestamp=parse_datetime(row.get("pedido_compra_timestamp")),
-                pedido_entregue_timestamp=parse_datetime(row.get("pedido_entregue_timestamp")),
-                data_estimada_entrega=parse_datetime(row.get("data_estimada_entrega")),
+                pedido_compra_timestamp=parse_datetime(
+                    row.get("pedido_compra_timestamp")),
+                pedido_entregue_timestamp=parse_datetime(
+                    row.get("pedido_entregue_timestamp")),
+                data_estimada_entrega=parse_datetime(
+                    row.get("data_estimada_entrega")),
                 tempo_entrega_dias=parse_float(row.get("tempo_entrega_dias")),
-                tempo_entrega_estimado_dias=parse_float(row.get("tempo_entrega_estimado_dias")),
-                diferenca_entrega_dias=parse_float(row.get("diferenca_entrega_dias")),
+                tempo_entrega_estimado_dias=parse_float(
+                    row.get("tempo_entrega_estimado_dias")),
+                diferenca_entrega_dias=parse_float(
+                    row.get("diferenca_entrega_dias")),
                 entrega_no_prazo=row.get("entrega_no_prazo"),
             ))
 
@@ -169,7 +200,8 @@ def load_all():
     with open(os.path.join(DATA_DIR, "fat_avaliacoes_pedidos.csv"), encoding="utf-8") as f:
         reader = csv.DictReader(f)
 
-        existentes_db = {a[0] for a in db.query(AvaliacaoPedido.id_avaliacao).all()}
+        existentes_db = {a[0]
+                         for a in db.query(AvaliacaoPedido.id_avaliacao).all()}
         existentes_csv = set()
 
         novos = []
@@ -207,4 +239,3 @@ def load_all():
 
 if __name__ == "__main__":
     load_all()
-

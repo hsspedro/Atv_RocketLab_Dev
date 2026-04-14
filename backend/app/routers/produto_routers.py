@@ -7,9 +7,34 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.produto import Produto
+from app.models.categoria import Categoria
 from app.models.item_pedido import ItemPedido
 from app.models.avaliacao_pedido import AvaliacaoPedido
 from app.utils.generate_id import generate_id
+
+
+def imagem_produto_categoria(produto: Produto, db: Session) -> dict:
+    categoria = db.query(Categoria).filter(
+        Categoria.nome_categoria == produto.categoria_produto
+    ).first()
+
+    # Calcular preço médio dos itens de pedidos
+    preco_medio = db.query(func.avg(ItemPedido.preco_BRL)).filter(
+        ItemPedido.id_produto == produto.id_produto
+    ).scalar()
+
+    produto_dict = {
+        "id_produto": produto.id_produto,
+        "nome_produto": produto.nome_produto,
+        "categoria_produto": produto.categoria_produto,
+        "peso_produto_gramas": produto.peso_produto_gramas,
+        "comprimento_centimetros": produto.comprimento_centimetros,
+        "altura_centimetros": produto.altura_centimetros,
+        "largura_centimetros": produto.largura_centimetros,
+        "preco_BRL": preco_medio if preco_medio else produto.preco_BRL,
+        "imagem_categoria": categoria.link_imagem if categoria else None
+    }
+    return produto_dict
 
 
 router = APIRouter(prefix="/produtos", tags=["Produtos"])
@@ -36,14 +61,14 @@ def criar_produto(produto: ProdutoCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(novo_produto)
 
-    return novo_produto
+    return imagem_produto_categoria(novo_produto, db)
 
 
 @router.get("/")
 def listar_produtos(
     last_id: Optional[str] = Query(None),
     nome: Optional[str] = Query(None),
-    limit: int = Query(50, le=100),
+    limit: int = Query(20, le=20),
     db: Session = Depends(get_db)
 ):
     query = db.query(Produto)
@@ -56,10 +81,14 @@ def listar_produtos(
 
     result = query.order_by(Produto.id_produto).limit(limit).all()
 
+    # Enriquecer produtos com imagens
+    produtos_enriquecidos = [
+        imagem_produto_categoria(p, db) for p in result]
+
     next_cursor = result[-1].id_produto if result else None
 
     return {
-        "data": result,
+        "data": produtos_enriquecidos,
         "next_cursor": next_cursor
     }
 
@@ -67,7 +96,7 @@ def listar_produtos(
 @router.get("/buscar")
 def buscar_produtos(
     nome: str = Query(..., min_length=1),
-    limit: int = Query(50, le=100),
+    limit: int = Query(20, le=20),
     db: Session = Depends(get_db)
 ):
     query = db.query(Produto).filter(Produto.nome_produto.ilike(f"%{nome}%"))
@@ -80,8 +109,11 @@ def buscar_produtos(
             detail="Nenhum produto encontrado com esse nome"
         )
 
+    produtos_enriquecidos = [
+        imagem_produto_categoria(p, db) for p in result]
+
     return {
-        "data": result
+        "data": produtos_enriquecidos
     }
 
 
@@ -111,7 +143,7 @@ def buscar_produto(id_produto: str, db: Session = Depends(get_db)):
             detail="Produto não encontrado"
         )
 
-    return produto
+    return imagem_produto_categoria(produto, db)
 
 
 @router.delete("/{id_produto}")
@@ -148,4 +180,4 @@ def atualizar_produto(id_produto: str, dados: ProdutoUpdate, db: Session = Depen
     db.commit()
     db.refresh(produto)
 
-    return produto
+    return imagem_produto_categoria(produto, db)

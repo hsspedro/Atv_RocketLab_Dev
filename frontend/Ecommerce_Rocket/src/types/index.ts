@@ -7,7 +7,9 @@ export interface Product {
   altura_centimetros?: number;
   largura_centimetros?: number;
   preco?: number;
+  preco_BRL?: number;
   imagem_url?: string;
+  imagem_categoria?: string;
 }
 
 export interface CartItem {

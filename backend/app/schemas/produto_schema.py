@@ -9,6 +9,7 @@ class ProdutoBase(BaseModel):
     comprimento_centimetros: Optional[float] = None
     altura_centimetros: Optional[float] = None
     largura_centimetros: Optional[float] = None
+    preco_BRL: Optional[float] = None
 
 
 class ProdutoCreate(ProdutoBase):
@@ -23,9 +24,11 @@ class ProdutoUpdate(BaseModel):
     comprimento_centimetros: Optional[float] = None
     altura_centimetros: Optional[float] = None
     largura_centimetros: Optional[float] = None
+    preco_BRL: Optional[float] = None
 
 
 class ProdutoRead(ProdutoBase):
     id_produto: str
+    imagem_categoria: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)

@@ -1,7 +1,7 @@
 import client from './client';
 import type { Product, ProductReview } from '../types';
 
-export const getProducts = (q?: string, lastId?: string, limit = 50) => {
+export const getProducts = (q?: string, lastId?: string, limit = 20) => {
   const params = new URLSearchParams();
   if (q) params.set('nome', q);
   if (lastId) params.set('last_id', lastId);

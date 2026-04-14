@@ -12,10 +12,14 @@ class Produto(Base):
     id_produto: Mapped[str] = mapped_column(String(32), primary_key=True)
     nome_produto: Mapped[str] = mapped_column(String(255))
     categoria_produto: Mapped[str] = mapped_column(String(100))
-    peso_produto_gramas: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    comprimento_centimetros: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    altura_centimetros: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    largura_centimetros: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    peso_produto_gramas: Mapped[Optional[float]
+                                ] = mapped_column(Float, nullable=True)
+    comprimento_centimetros: Mapped[Optional[float]
+                                    ] = mapped_column(Float, nullable=True)
+    altura_centimetros: Mapped[Optional[float]
+                               ] = mapped_column(Float, nullable=True)
+    largura_centimetros: Mapped[Optional[float]
+                                ] = mapped_column(Float, nullable=True)
+    preco_BRL: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     media_avaliacoes = Column(Float, default=0.0)
     total_avaliacoes = Column(Integer, default=0)
-

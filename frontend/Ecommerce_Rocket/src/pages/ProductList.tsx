@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { getProducts } from '../api/productApi';
 import type { Product } from '../types';
 import ProductGrid from '../components/organisms/ProductGrid';
@@ -35,9 +36,31 @@ export default function ProductList() {
 
       <section style={{ marginBottom: '40px' }}>
         <div style={{ marginBottom: '32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div>
-            <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 8px 0' }}>Nossos Produtos</h2>
-            <p style={{ color: '#6b7280', margin: '0' }}>Explore nossa seleção completa</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 8px 0' }}>Nossos Produtos</h2>
+              <p style={{ color: '#6b7280', margin: '0' }}>Explore nossa seleção completa</p>
+            </div>
+            <Link to="/novo-produto" style={{ textDecoration: 'none' }}>
+              <button
+                style={{
+                  padding: '12px 24px',
+                  background: '#a855f7',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  transition: 'background 0.3s',
+                  whiteSpace: 'nowrap'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#9333ea'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = '#a855f7'; }}
+              >
+                ➕ Novo Produto
+              </button>
+            </Link>
           </div>
           <input
             value={query}
